@@ -62,11 +62,6 @@ public class Server implements Callable<Integer> {
         return 0;
     }
 
-    /**
-     * Callable function to **initialize** the server
-     * @return
-     * @throws Exception
-     */
     @Override
     public Integer call() {
         try {
@@ -127,6 +122,9 @@ public class Server implements Callable<Integer> {
         }
 
         public Server build() throws IOException {
+            if (inputMiddleware == null) inputMiddleware = Middleware.basic();
+            if (outputMiddleware == null) outputMiddleware = Middleware.basic();
+
             return new Server(
                 port,
                 serverSocketFactory,

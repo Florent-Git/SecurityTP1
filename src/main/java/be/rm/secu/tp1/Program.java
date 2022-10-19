@@ -1,29 +1,28 @@
 package be.rm.secu.tp1;
 
-import be.rm.secu.tp1.chain.EchoMiddleware;
+import be.rm.secu.tp1.chain.CRLFAppenderMiddleware;
 import be.rm.secu.tp1.chain.Middleware;
-import be.rm.secu.tp1.net.Server;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import be.rm.secu.tp1.chain.StdoutMiddleware;
+import be.rm.secu.tp1.net.Client;
 
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLSocketFactory;
-import java.io.IOException;
+import javax.net.SocketFactory;
 import java.util.concurrent.Executors;
 
 public class Program {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         var executorService = Executors.newFixedThreadPool(4);
 
-        Server server = Server.builder()
+        Client client = Client.builder()
+            .withHost("localhost")
             .withPort(18697)
-            .withServerSocketFactory(ServerSocketFactory.getDefault())
+            .withSocketFactory(SocketFactory.getDefault())
             .withExecutorService(executorService)
-            .withPrinter(System.out)
-            .withInputMiddleware(Middleware.link(new EchoMiddleware()))
-            .withOutputMiddleware(Middleware.basic())
+            .withStdin(System.in)
+            .withStdout(System.out)
+            .withOutputMiddlewares(Middleware.link(new CRLFAppenderMiddleware()))
+            .withInputMiddlewares(Middleware.link(new StdoutMiddleware()))
             .build();
 
-        server.start();
+        client.call();
     }
 }
