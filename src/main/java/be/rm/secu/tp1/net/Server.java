@@ -11,6 +11,7 @@ import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -67,8 +68,13 @@ public class Server implements Callable<Integer> {
 
     @Override
     public Integer call() {
+        Scanner scanner = new Scanner(System.in);
         try {
             start();
+            while (!_serverService.isCancelled() && !_serverService.isDone()) {
+                byte entry = scanner.nextByte();
+                if (entry == 0x04) _serverService.cancel(true);
+            }
             return 0;
         } catch (Exception e) {
             System.err.println(e.getMessage());
