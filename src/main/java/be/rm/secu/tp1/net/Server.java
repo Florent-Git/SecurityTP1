@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
@@ -15,9 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 /**
- * Creates a server that listens on the {@code port} port.
- * If an {@code ExecutorService} is set, launches the server on a
- * separate thread and
+ *
  */
 @Singleton
 public class Server implements Callable<Integer> {
@@ -33,14 +32,14 @@ public class Server implements Callable<Integer> {
         int port,
         ServerSocketFactory socketFactory,
         ExecutorService executorService,
-        PrintStream printer,
+        OutputStream printer,
         Middleware<ServerConnexionPayload> inputMiddleware,
         Middleware<byte[]> outputMiddleware
     ) throws IOException {
         _socket = socketFactory.createServerSocket(port);
         _executorService = executorService;
 
-        _printer = printer;
+        _printer = new PrintStream(printer);
         _inputMiddleware = inputMiddleware;
         _outputMiddleware = outputMiddleware;
     }
@@ -49,6 +48,10 @@ public class Server implements Callable<Integer> {
         _serverService = _executorService.submit(this::listen);
     }
 
+    /**
+     * Écoute la connexion des clients au serveur
+     * @return 0 si aucune erreur, -1 si il y a une erreur
+     */
     private Integer listen() throws IOException {
         while (!_serverService.isCancelled() && !_serverService.isDone()) {
             var serverConnexionSocket = _socket.accept();
@@ -86,7 +89,7 @@ public class Server implements Callable<Integer> {
     public static class Builder {
         private int port;
         private ServerSocketFactory serverSocketFactory;
-        private PrintStream printer;
+        private OutputStream printer;
         private ExecutorService executorService;
         private Middleware<byte[]> outputMiddleware;
         private Middleware<ServerConnexionPayload> inputMiddleware;
@@ -101,7 +104,7 @@ public class Server implements Callable<Integer> {
             return this;
         }
 
-        public Builder withPrinter(PrintStream printer) {
+        public Builder withStdout(OutputStream printer) {
             this.printer = printer;
             return this;
         }
