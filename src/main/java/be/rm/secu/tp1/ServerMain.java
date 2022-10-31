@@ -23,5 +23,7 @@ public class ServerMain {
             .build();
 
         server.start();
+
+        //Créer Middleware B64Decoder & ThreeDesDecoder
     }
 }

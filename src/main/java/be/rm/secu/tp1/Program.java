@@ -1,13 +1,15 @@
 package be.rm.secu.tp1;
 
 import be.rm.secu.tp1.cli.ThreeDESCommandClient;
+import be.rm.secu.tp1.cli.ThreeDESCommandServer;
 import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "tp1",
     description = "Projet de TP1 en Principe de Sécurité des Réseaux pour le Master en Architecture des Systèmes Informatiques à la HEPL",
     subcommands = {
-        ThreeDESCommandClient.class
+        ThreeDESCommandClient.class,
+        ThreeDESCommandServer.class
     }
 )
 public class Program {
