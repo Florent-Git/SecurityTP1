@@ -56,10 +56,8 @@ public class Server implements Callable<Integer> {
     private Integer listen() throws IOException {
         while (!_serverService.isCancelled() && !_serverService.isDone()) {
             var serverConnexionSocket = _socket.accept();
-            System.out.println("New connexion from " + serverConnexionSocket.getInetAddress());
-            var serverConnexion = new ServerConnexion(serverConnexionSocket, _outputMiddleware);
+            var serverConnexion = new ServerConnexion(serverConnexionSocket, _outputMiddleware, _inputMiddleware);
             var serverConnexionService = _executorService.submit(serverConnexion);
-            serverConnexion.subscribe(this::onConnexionMessage);
             _serverConnexions.put(serverConnexion, serverConnexionService);
         }
 
