@@ -5,19 +5,19 @@ import com.google.inject.Singleton;
 
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 /**
- * Creates a server that listens on the {@code port} port.
- * If an {@code ExecutorService} is set, launches the server on a
- * separate thread and
+ *
  */
 @Singleton
 public class Server implements Callable<Integer> {
@@ -33,14 +33,14 @@ public class Server implements Callable<Integer> {
         int port,
         ServerSocketFactory socketFactory,
         ExecutorService executorService,
-        PrintStream printer,
+        OutputStream printer,
         Middleware<ServerConnexionPayload> inputMiddleware,
         Middleware<byte[]> outputMiddleware
     ) throws IOException {
         _socket = socketFactory.createServerSocket(port);
         _executorService = executorService;
 
-        _printer = printer;
+        _printer = new PrintStream(printer);
         _inputMiddleware = inputMiddleware;
         _outputMiddleware = outputMiddleware;
     }
@@ -49,13 +49,15 @@ public class Server implements Callable<Integer> {
         _serverService = _executorService.submit(this::listen);
     }
 
+    /**
+     * Écoute la connexion des clients au serveur
+     * @return 0 si aucune erreur, -1 si il y a une erreur
+     */
     private Integer listen() throws IOException {
         while (!_serverService.isCancelled() && !_serverService.isDone()) {
             var serverConnexionSocket = _socket.accept();
-            System.out.println("New connexion from " + serverConnexionSocket.getInetAddress());
-            var serverConnexion = new ServerConnexion(serverConnexionSocket, _outputMiddleware);
+            var serverConnexion = new ServerConnexion(serverConnexionSocket, _outputMiddleware, _inputMiddleware);
             var serverConnexionService = _executorService.submit(serverConnexion);
-            serverConnexion.subscribe(this::onConnexionMessage);
             _serverConnexions.put(serverConnexion, serverConnexionService);
         }
 
@@ -64,8 +66,13 @@ public class Server implements Callable<Integer> {
 
     @Override
     public Integer call() {
+        Scanner scanner = new Scanner(System.in);
         try {
             start();
+            while (!_serverService.isCancelled() && !_serverService.isDone()) {
+                byte entry = scanner.nextByte();
+                if (entry == 0x04) _serverService.cancel(true);
+            }
             return 0;
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -86,7 +93,7 @@ public class Server implements Callable<Integer> {
     public static class Builder {
         private int port;
         private ServerSocketFactory serverSocketFactory;
-        private PrintStream printer;
+        private OutputStream printer;
         private ExecutorService executorService;
         private Middleware<byte[]> outputMiddleware;
         private Middleware<ServerConnexionPayload> inputMiddleware;
@@ -101,7 +108,7 @@ public class Server implements Callable<Integer> {
             return this;
         }
 
-        public Builder withPrinter(PrintStream printer) {
+        public Builder withStdout(OutputStream printer) {
             this.printer = printer;
             return this;
         }

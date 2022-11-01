@@ -27,9 +27,7 @@ public abstract class Middleware<T> {
     public abstract T operate(T object);
 
     protected final T next(T object) {
-        if (_next == null) {
-            return object;
-        }
+        if (_next == null) return object;
         return _next.operate(object);
     }
 

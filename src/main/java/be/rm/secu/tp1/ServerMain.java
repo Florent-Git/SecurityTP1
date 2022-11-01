@@ -17,11 +17,13 @@ public class ServerMain {
             .withPort(18697)
             .withServerSocketFactory(ServerSocketFactory.getDefault())
             .withExecutorService(executorService)
-            .withPrinter(System.out)
+            .withStdout(System.out)
             .withInputMiddleware(Middleware.link(new EchoMiddleware()))
             .withOutputMiddleware(Middleware.link(new CRLFAppenderMiddleware()))
             .build();
 
         server.start();
+
+        //Créer Middleware B64Decoder & ThreeDesDecoder
     }
 }

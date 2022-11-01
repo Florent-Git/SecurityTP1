@@ -1,28 +1,36 @@
 package be.rm.secu.tp1;
 
-import be.rm.secu.tp1.chain.CRLFAppenderMiddleware;
-import be.rm.secu.tp1.chain.Middleware;
-import be.rm.secu.tp1.chain.StdoutMiddleware;
-import be.rm.secu.tp1.net.Client;
+import be.rm.secu.tp1.cli.ThreeDESCommandClient;
+import be.rm.secu.tp1.cli.ThreeDESCommandServer;
+import picocli.CommandLine;
 
-import javax.net.SocketFactory;
-import java.util.concurrent.Executors;
-
+@CommandLine.Command(
+    name = "tp1",
+    description = "Projet de TP1 en Principe de Sécurité des Réseaux pour le Master en Architecture des Systèmes Informatiques à la HEPL",
+    subcommands = {
+        ThreeDESCommandClient.class,
+        ThreeDESCommandServer.class
+    }
+)
 public class Program {
-    public static void main(String[] args) throws Exception {
-        var executorService = Executors.newFixedThreadPool(4);
-
-        Client client = Client.builder()
-            .withHost("localhost")
-            .withPort(18697)
-            .withSocketFactory(SocketFactory.getDefault())
-            .withExecutorService(executorService)
-            .withStdin(System.in)
-            .withStdout(System.out)
-            .withOutputMiddlewares(Middleware.link(new CRLFAppenderMiddleware()))
-            .withInputMiddlewares(Middleware.link(new StdoutMiddleware()))
-            .build();
-
-        client.call();
+    public static void main(String[] args) {
+        System.exit(
+            new CommandLine(new Program())
+                .execute(args)
+        );
+//        var executorService = Executors.newFixedThreadPool(4);
+//
+//        Client client = Client.builder()
+//            .withHost("localhost")
+//            .withPort(18697)
+//            .withSocketFactory(SocketFactory.getDefault())
+//            .withExecutorService(executorService)
+//            .withStdin(System.in)
+//            .withStdout(System.out)
+//            .withOutputMiddlewares(Middleware.link(new CRLFAppenderMiddleware()))
+//            .withInputMiddlewares(Middleware.link(new StdoutMiddleware()))
+//            .build();
+//
+//        client.call();
     }
 }
