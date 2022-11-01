@@ -1,11 +1,13 @@
 package be.rm.secu.tp1.chain;
 
+import be.rm.secu.tp1.util.Payload;
+
 import java.nio.charset.StandardCharsets;
 
-public class StdoutMiddleware extends Middleware<byte[]> {
+public class StdoutMiddleware extends Middleware<Payload<byte[]>> {
     @Override
-    public byte[] operate(byte[] object) {
-        System.out.println(new String(object, StandardCharsets.UTF_8));
-        return new byte[0];
+    public Payload<byte[]> operate(Payload<byte[]> payload) {
+        System.out.println(new String(payload.object(), StandardCharsets.UTF_8));
+        return payload;
     }
 }

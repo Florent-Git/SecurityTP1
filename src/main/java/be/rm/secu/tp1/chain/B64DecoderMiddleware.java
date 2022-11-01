@@ -1,14 +1,13 @@
 package be.rm.secu.tp1.chain;
 
-import be.rm.secu.tp1.net.ServerConnexionPayload;
+import be.rm.secu.tp1.util.Payload;
 
 import java.util.Base64;
 
-public class B64DecoderMiddleware extends Middleware<ServerConnexionPayload>{
+public class B64DecoderMiddleware extends Middleware<Payload<byte[]>>{
     @Override
-    public ServerConnexionPayload operate(ServerConnexionPayload object) {
+    public Payload<byte[]> operate(Payload<byte[]> payload) {
         var decoder = Base64.getDecoder();
-        var newObject = new ServerConnexionPayload(decoder.decode(object.bytes()), object.source());
-        return next(newObject);
+        return next(Payload.of(decoder.decode(payload.object()), payload.source()));
     }
 }

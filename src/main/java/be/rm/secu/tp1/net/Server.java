@@ -1,6 +1,7 @@
 package be.rm.secu.tp1.net;
 
 import be.rm.secu.tp1.chain.Middleware;
+import be.rm.secu.tp1.util.Payload;
 import com.google.inject.Singleton;
 
 import javax.net.ServerSocketFactory;
@@ -8,7 +9,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -25,8 +25,8 @@ public class Server implements Callable<Integer> {
     private final ServerSocket _socket;
     private Future<Integer> _serverService;
     private final Map<ServerConnexion, Future<Integer>> _serverConnexions = new HashMap<>();
-    private final Middleware<ServerConnexionPayload> _inputMiddleware;
-    private final Middleware<byte[]> _outputMiddleware;
+    private final Middleware<Payload<byte[]>> _inputMiddleware;
+    private final Middleware<Payload<byte[]>> _outputMiddleware;
     private final PrintStream _printer;
 
     private Server(
@@ -34,8 +34,8 @@ public class Server implements Callable<Integer> {
         ServerSocketFactory socketFactory,
         ExecutorService executorService,
         OutputStream printer,
-        Middleware<ServerConnexionPayload> inputMiddleware,
-        Middleware<byte[]> outputMiddleware
+        Middleware<Payload<byte[]>> inputMiddleware,
+        Middleware<Payload<byte[]>> outputMiddleware
     ) throws IOException {
         _socket = socketFactory.createServerSocket(port);
         _executorService = executorService;
@@ -80,12 +80,6 @@ public class Server implements Callable<Integer> {
         }
     }
 
-    private void onConnexionMessage(ServerConnexionPayload payload) {
-        var processedMessage = _inputMiddleware.operate(payload);
-        var stringMessage = new String(processedMessage.bytes(), StandardCharsets.UTF_8);
-        _printer.println(stringMessage);
-    }
-
     public static Builder builder() {
         return new Builder();
     }
@@ -95,8 +89,8 @@ public class Server implements Callable<Integer> {
         private ServerSocketFactory serverSocketFactory;
         private OutputStream printer;
         private ExecutorService executorService;
-        private Middleware<byte[]> outputMiddleware;
-        private Middleware<ServerConnexionPayload> inputMiddleware;
+        private Middleware<Payload<byte[]>> outputMiddleware;
+        private Middleware<Payload<byte[]>> inputMiddleware;
 
         public Builder withPort(int port) {
             this.port = port;
@@ -118,12 +112,12 @@ public class Server implements Callable<Integer> {
             return this;
         }
 
-        public Builder withOutputMiddleware(Middleware<byte[]> middleware) {
+        public Builder withOutputMiddleware(Middleware<Payload<byte[]>> middleware) {
             this.outputMiddleware = middleware;
             return this;
         }
 
-        public Builder withInputMiddleware(Middleware<ServerConnexionPayload> middleware) {
+        public Builder withInputMiddleware(Middleware<Payload<byte[]>> middleware) {
             this.inputMiddleware = middleware;
             return this;
         }

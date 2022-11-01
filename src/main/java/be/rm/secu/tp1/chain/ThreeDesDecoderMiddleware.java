@@ -1,6 +1,6 @@
 package be.rm.secu.tp1.chain;
 
-import be.rm.secu.tp1.net.ServerConnexionPayload;
+import be.rm.secu.tp1.util.Payload;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-public class ThreeDesDecoderMiddleware extends Middleware<ServerConnexionPayload> {
+public class ThreeDesDecoderMiddleware extends Middleware<Payload<byte[]>> {
     private final byte[] keyBytes;
 
     public ThreeDesDecoderMiddleware(String key) {
@@ -19,7 +19,7 @@ public class ThreeDesDecoderMiddleware extends Middleware<ServerConnexionPayload
     }
 
     @Override
-    public ServerConnexionPayload operate(ServerConnexionPayload object) {
+    public Payload<byte[]> operate(Payload<byte[]> payload) {
         var secretKeySpec = new SecretKeySpec(keyBytes, "TripleDES");
         Cipher decryptCipher;
         byte[] secretMessage;
@@ -27,13 +27,12 @@ public class ThreeDesDecoderMiddleware extends Middleware<ServerConnexionPayload
         try {
             decryptCipher = Cipher.getInstance("TripleDES/ECB/PKCS5Padding");
             decryptCipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
-            secretMessage = decryptCipher.doFinal(object.bytes());
+            secretMessage = decryptCipher.doFinal(payload.object());
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException |
                  InvalidKeyException e) {
             throw new RuntimeException(e);
         }
 
-        var newObject = new ServerConnexionPayload(secretMessage, object.source());
-        return next(newObject);
+        return next(Payload.of(secretMessage, payload.source()));
     }
 }

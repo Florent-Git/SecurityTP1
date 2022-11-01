@@ -1,6 +1,7 @@
 package be.rm.secu.tp1.net;
 
 import be.rm.secu.tp1.chain.Middleware;
+import be.rm.secu.tp1.util.Payload;
 
 import javax.net.SocketFactory;
 import java.io.*;
@@ -16,8 +17,8 @@ public class Client implements Callable<Integer> {
     private final Scanner _inputScanner;
     private final PrintStream _printer;
     private Future<Integer> _clientCon;
-    private final Middleware<byte[]> _inputMiddlewares;
-    private final Middleware<byte[]> _outputMiddlewares;
+    private final Middleware<Payload<byte[]>> _inputMiddlewares;
+    private final Middleware<Payload<byte[]>> _outputMiddlewares;
     private final ExecutorService _executorService;
 
     private Client(
@@ -27,8 +28,8 @@ public class Client implements Callable<Integer> {
         ExecutorService executorService,
         InputStream stdin,
         OutputStream stdout,
-        Middleware<byte[]> inputMiddlewares,
-        Middleware<byte[]> outputMiddlewares
+        Middleware<Payload<byte[]>> inputMiddlewares,
+        Middleware<Payload<byte[]>> outputMiddlewares
     ) throws IOException {
         _inputMiddlewares = inputMiddlewares;
         _outputMiddlewares = outputMiddlewares;
@@ -48,9 +49,11 @@ public class Client implements Callable<Integer> {
         String input;
         do {
             input = _inputScanner.nextLine();
-            var processedInput = _outputMiddlewares.operate(input.getBytes(StandardCharsets.UTF_8));
+            var processedInput = _outputMiddlewares.operate(
+                Payload.of(input.getBytes(StandardCharsets.UTF_8), this)
+            );
 
-            output.write(processedInput);
+            output.write(processedInput.object());
         } while (!input.equals("" + (char) 0x04));
 
         return 0;
@@ -69,7 +72,7 @@ public class Client implements Callable<Integer> {
 
     private void onNewMessage(String newMessage) {
         var encodedMessage = newMessage.getBytes(StandardCharsets.UTF_8);
-        _inputMiddlewares.operate(encodedMessage);
+        _inputMiddlewares.operate(Payload.of(encodedMessage, null));
     }
 
     public static Builder builder() {
@@ -83,8 +86,8 @@ public class Client implements Callable<Integer> {
         private ExecutorService executorService;
         private InputStream stdin;
         private OutputStream stdout;
-        private Middleware<byte[]> inputMiddlewares;
-        private Middleware<byte[]> outputMiddlewares;
+        private Middleware<Payload<byte[]>> inputMiddlewares;
+        private Middleware<Payload<byte[]>> outputMiddlewares;
 
         public Builder withHost(String host) {
             this.host = host;
@@ -116,12 +119,12 @@ public class Client implements Callable<Integer> {
             return this;
         }
 
-        public Builder withInputMiddlewares(Middleware<byte[]> inputMiddlewares) {
+        public Builder withInputMiddlewares(Middleware<Payload<byte[]>> inputMiddlewares) {
             this.inputMiddlewares = inputMiddlewares;
             return this;
         }
 
-        public Builder withOutputMiddlewares(Middleware<byte[]> outputMiddlewares) {
+        public Builder withOutputMiddlewares(Middleware<Payload<byte[]>> outputMiddlewares) {
             this.outputMiddlewares = outputMiddlewares;
             return this;
         }

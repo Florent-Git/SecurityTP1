@@ -1,6 +1,9 @@
 package be.rm.secu.tp1.cli;
 
-import be.rm.secu.tp1.chain.*;
+import be.rm.secu.tp1.chain.B64DecoderMiddleware;
+import be.rm.secu.tp1.chain.Middleware;
+import be.rm.secu.tp1.chain.StdoutMiddleware;
+import be.rm.secu.tp1.chain.ThreeDesDecoderMiddleware;
 import be.rm.secu.tp1.net.Server;
 import picocli.CommandLine;
 
@@ -35,7 +38,7 @@ public class ThreeDESCommandServer implements Callable<Integer> {
             .withInputMiddleware(Middleware.link(
                 new B64DecoderMiddleware(),
                 new ThreeDesDecoderMiddleware(_key),
-                new StdoutServerPayloadMiddleware()
+                new StdoutMiddleware()
             ))
             .build();
 

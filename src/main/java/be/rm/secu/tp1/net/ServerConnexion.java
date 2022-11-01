@@ -1,6 +1,7 @@
 package be.rm.secu.tp1.net;
 
 import be.rm.secu.tp1.chain.Middleware;
+import be.rm.secu.tp1.util.Payload;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -12,14 +13,14 @@ import java.util.concurrent.Callable;
 
 public class ServerConnexion implements Callable<Integer>, Closeable {
     private final Socket _connexionSocket;
-    private final Middleware<byte[]> _outputMiddleware;
-    private final Middleware<ServerConnexionPayload> _inputMiddleware;
+    private final Middleware<Payload<byte[]>> _outputMiddleware;
+    private final Middleware<Payload<byte[]>> _inputMiddleware;
     private boolean _shouldClose = false;
 
     public ServerConnexion(
         Socket connexionSocket,
-        Middleware<byte[]> outputMiddleware,
-        Middleware<ServerConnexionPayload> inputMiddleware
+        Middleware<Payload<byte[]>> outputMiddleware,
+        Middleware<Payload<byte[]>> inputMiddleware
     ) {
         _outputMiddleware = outputMiddleware;
         _inputMiddleware = inputMiddleware;
@@ -33,7 +34,7 @@ public class ServerConnexion implements Callable<Integer>, Closeable {
         while (!_shouldClose) {
             var string = input.readLine();
             var bytes = string.getBytes(StandardCharsets.UTF_8);
-            _inputMiddleware.operate(new ServerConnexionPayload(bytes, this));
+            _inputMiddleware.operate(Payload.of(bytes, this));
         }
 
         return 0;
@@ -47,8 +48,8 @@ public class ServerConnexion implements Callable<Integer>, Closeable {
 
     public void send(byte[] message) throws IOException {
         var output = _connexionSocket.getOutputStream();
-        var processedMessage = _outputMiddleware.operate(message);
+        var processedMessage = _outputMiddleware.operate(Payload.of(message, null));
 
-        output.write(processedMessage);
+        output.write(processedMessage.object());
     }
 }
