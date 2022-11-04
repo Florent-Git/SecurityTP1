@@ -34,7 +34,7 @@ public class ServerConnexion implements Callable<Integer>, Closeable {
         while (!_shouldClose) {
             var string = input.readLine();
             var bytes = string.getBytes(StandardCharsets.UTF_8);
-            _inputMiddleware.operate(Payload.of(bytes, this));
+            _inputMiddleware.operate(Payload.of(bytes));
         }
 
         return 0;
@@ -48,8 +48,8 @@ public class ServerConnexion implements Callable<Integer>, Closeable {
 
     public void send(byte[] message) throws IOException {
         var output = _connexionSocket.getOutputStream();
-        var processedMessage = _outputMiddleware.operate(Payload.of(message, null));
+        var processedMessage = _outputMiddleware.operate(Payload.of(message));
 
-        output.write(processedMessage.object());
+        output.write(processedMessage.getObject());
     }
 }
