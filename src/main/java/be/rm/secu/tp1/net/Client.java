@@ -14,7 +14,6 @@ import java.util.concurrent.Future;
 
 public class Client implements Callable<Integer> {
     private final Socket _socket;
-    private final Scanner _inputScanner;
     private final PrintStream _printer;
     private Future<Integer> _clientCon;
     private final Middleware<Payload<byte[]>> _inputMiddlewares;
@@ -26,7 +25,6 @@ public class Client implements Callable<Integer> {
         int port,
         SocketFactory socketFactory,
         ExecutorService executorService,
-        InputStream stdin,
         OutputStream stdout,
         Middleware<Payload<byte[]>> inputMiddlewares,
         Middleware<Payload<byte[]>> outputMiddlewares
@@ -37,26 +35,25 @@ public class Client implements Callable<Integer> {
 
         this._executorService = executorService;
 
-        this._inputScanner = new Scanner(stdin);
         this._printer = new PrintStream(stdout);
     }
 
     @Override
     public Integer call() throws Exception {
         _clientCon = _executorService.submit(this::listen);
-        var output = _socket.getOutputStream();
-
-        String input;
-        do {
-            input = _inputScanner.nextLine();
-            var processedInput = _outputMiddlewares.operate(
-                Payload.of(input.getBytes(StandardCharsets.UTF_8), this)
-            );
-
-            output.write(processedInput.object());
-        } while (!input.equals("" + (char) 0x04));
-
         return 0;
+    }
+
+    public void sendMessage(String message) throws IOException {
+        sendMessage(message.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public void sendMessage(byte[] message) throws IOException {
+        var processedInput = _outputMiddlewares.operate(
+            Payload.of(message, this)
+        );
+
+        _socket.getOutputStream().write(processedInput.object());
     }
 
     private Integer listen() throws IOException {
@@ -84,7 +81,6 @@ public class Client implements Callable<Integer> {
         private int port;
         private SocketFactory socketFactory;
         private ExecutorService executorService;
-        private InputStream stdin;
         private OutputStream stdout;
         private Middleware<Payload<byte[]>> inputMiddlewares;
         private Middleware<Payload<byte[]>> outputMiddlewares;
@@ -109,11 +105,6 @@ public class Client implements Callable<Integer> {
             return this;
         }
 
-        public Builder withStdin(InputStream stdin) {
-            this.stdin = stdin;
-            return this;
-        }
-
         public Builder withStdout(OutputStream stdout) {
             this.stdout = stdout;
             return this;
@@ -134,7 +125,7 @@ public class Client implements Callable<Integer> {
             if (outputMiddlewares == null) outputMiddlewares = Middleware.basic();
 
             return new Client(
-                host, port, socketFactory, executorService, stdin, stdout, inputMiddlewares, outputMiddlewares
+                host, port, socketFactory, executorService, stdout, inputMiddlewares, outputMiddlewares
             );
         }
     }

@@ -11,6 +11,7 @@ import javax.net.SocketFactory;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
@@ -54,7 +55,6 @@ public class ThreeDESCommandClient implements Callable<Integer> {
             .withHost(_host)
             .withPort(_port)
             .withStdout(System.out)
-            .withStdin(stdin)
             .withExecutorService(executor)
             .withSocketFactory(SocketFactory.getDefault())
             .withOutputMiddlewares(Middleware.link(
@@ -63,6 +63,12 @@ public class ThreeDESCommandClient implements Callable<Integer> {
                 new CRLFAppenderMiddleware()
             ))
             .build();
+
+        client.call();
+
+        var scanner = new Scanner(stdin);
+
+        client.sendMessage(scanner.nextLine());
 
         return client.call();
     }
