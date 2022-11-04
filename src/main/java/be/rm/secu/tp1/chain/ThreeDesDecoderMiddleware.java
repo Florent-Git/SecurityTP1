@@ -27,12 +27,12 @@ public class ThreeDesDecoderMiddleware extends Middleware<Payload<byte[]>> {
         try {
             decryptCipher = Cipher.getInstance("TripleDES/ECB/PKCS5Padding");
             decryptCipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
-            secretMessage = decryptCipher.doFinal(payload.object());
+            secretMessage = decryptCipher.doFinal(payload.getObject());
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException |
                  InvalidKeyException e) {
             throw new RuntimeException(e);
         }
 
-        return next(Payload.of(secretMessage, payload.source()));
+        return next(Payload.of(secretMessage));
     }
 }

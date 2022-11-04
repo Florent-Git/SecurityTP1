@@ -52,10 +52,10 @@ public class Client implements Callable<Integer> {
 
     public void sendMessage(byte[] message) throws IOException {
         var processedInput = _outputMiddlewares.operate(
-            Payload.of(message, this)
+            Payload.of(message)
         );
 
-        _socket.getOutputStream().write(processedInput.object());
+        _socket.getOutputStream().write(processedInput.getObject());
     }
 
     public byte[] readMessage() {
@@ -75,8 +75,8 @@ public class Client implements Callable<Integer> {
 
     private void onNewMessage(String newMessage) {
         var encodedMessage = newMessage.getBytes(StandardCharsets.UTF_8);
-        var operatedMessage = _inputMiddlewares.operate(Payload.of(encodedMessage, null));
-        newMessages.onNext(operatedMessage.object());
+        var operatedMessage = _inputMiddlewares.operate(Payload.of(encodedMessage));
+        newMessages.onNext(operatedMessage.getObject());
     }
 
     public static Builder builder() {

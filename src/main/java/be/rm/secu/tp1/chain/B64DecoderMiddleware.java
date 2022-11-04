@@ -8,6 +8,6 @@ public class B64DecoderMiddleware extends Middleware<Payload<byte[]>>{
     @Override
     public Payload<byte[]> operate(Payload<byte[]> payload) {
         var decoder = Base64.getDecoder();
-        return next(Payload.of(decoder.decode(payload.object()), payload.source()));
+        return next(Payload.of(decoder.decode(payload.getObject())));
     }
 }
