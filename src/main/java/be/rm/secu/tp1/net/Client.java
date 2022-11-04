@@ -52,10 +52,14 @@ public class Client implements Callable<Integer> {
 
     public void sendMessage(byte[] message) throws IOException {
         var processedInput = _outputMiddlewares.operate(
-            Payload.of(message)
+            createPayload(message)
         );
 
         _socket.getOutputStream().write(processedInput.getObject());
+    }
+
+    protected Payload<byte[]> createPayload(byte[] bytes){
+        return Payload.of(bytes);
     }
 
     public byte[] readMessage() {

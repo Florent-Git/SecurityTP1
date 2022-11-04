@@ -2,6 +2,7 @@ package be.rm.secu.tp1.cli;
 
 import be.rm.secu.tp1.chain.*;
 import be.rm.secu.tp1.net.Client;
+import be.rm.secu.tp1.net.DHClient;
 import picocli.CommandLine;
 
 import javax.crypto.KeyAgreement;
@@ -24,11 +25,6 @@ import java.util.concurrent.Executors;
 
 public class AESCommandClient implements Callable<Integer> {
     @CommandLine.Option(
-        names = { "-k", "--key" },
-        description = "Clé d'encryption AES (128 bits) (défaut: ILOVESECURITY)"
-    ) private String _key = "ILOVESECURITY";
-
-    @CommandLine.Option(
         names = { "-p", "--port" },
         description = "Port d'écoute du serveur d'encryption (défaut: 56978)"
     ) private int _port = 56978;
@@ -46,49 +42,25 @@ public class AESCommandClient implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         var executor = Executors.newFixedThreadPool(2);
-        byte[] clientSharedSecret = new byte[0];
 
         InputStream stdin;
         if (_message != null) stdin = new ByteArrayInputStream(_message.getBytes(StandardCharsets.UTF_8));
         else stdin = System.in;
 
-        var client = Client.builder()
+        var client = new DHClient.Builder()
             .withHost(_host)
             .withPort(_port)
             .withStdout(System.out)
             .withExecutorService(executor)
             .withSocketFactory(SocketFactory.getDefault())
             .withOutputMiddlewares(Middleware.link(
-                new AESEncoderMiddleware(clientSharedSecret),
+                new AESEncoderMiddleware(),
                 new B64EncoderMiddleware(),
                 new CRLFAppenderMiddleware()
             ))
             .build();
 
         client.call();
-
-        //Génération de la paire de clés client DH
-        KeyPairGenerator clientKpairGen = KeyPairGenerator.getInstance("DH");
-        clientKpairGen.initialize(2048);
-        KeyPair clientKpair = clientKpairGen.generateKeyPair();
-
-        //Initialisation du KeyAgreement du client
-        KeyAgreement clientKeyAgree = KeyAgreement.getInstance("DH");
-        clientKeyAgree.init(clientKpair.getPrivate());
-
-        //Encryption et envoi de la clé publique du client au serveur
-        byte[] clientPubKeyEnc = clientKpair.getPublic().getEncoded();
-
-        client.sendMessage(clientPubKeyEnc);
-
-        //Traitement de la réponse du serveur
-        KeyFactory clientKeyFac = KeyFactory.getInstance("DH");
-        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(client.readMessage());
-        PublicKey serverPubKey = clientKeyFac.generatePublic(x509KeySpec);
-        clientKeyAgree.doPhase(serverPubKey, true);
-
-        //Récupération de la clé
-        clientSharedSecret = clientKeyAgree.generateSecret();
 
         //Envoi du message
         client.sendMessage(_message);
