@@ -2,12 +2,13 @@ package be.rm.secu.tp1.net;
 
 import be.rm.secu.tp1.chain.Middleware;
 import be.rm.secu.tp1.util.Payload;
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 
 import javax.net.SocketFactory;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -19,6 +20,7 @@ public class Client implements Callable<Integer> {
     private final Middleware<Payload<byte[]>> _inputMiddlewares;
     private final Middleware<Payload<byte[]>> _outputMiddlewares;
     private final ExecutorService _executorService;
+    private final Subject<byte[]> newMessages = PublishSubject.create();
 
     private Client(
         String host,
@@ -39,7 +41,7 @@ public class Client implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public Integer call() {
         _clientCon = _executorService.submit(this::listen);
         return 0;
     }
@@ -56,6 +58,10 @@ public class Client implements Callable<Integer> {
         _socket.getOutputStream().write(processedInput.object());
     }
 
+    public byte[] readMessage() {
+        return newMessages.blockingFirst();
+    }
+
     private Integer listen() throws IOException {
         var input = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
 
@@ -69,7 +75,8 @@ public class Client implements Callable<Integer> {
 
     private void onNewMessage(String newMessage) {
         var encodedMessage = newMessage.getBytes(StandardCharsets.UTF_8);
-        _inputMiddlewares.operate(Payload.of(encodedMessage, null));
+        var operatedMessage = _inputMiddlewares.operate(Payload.of(encodedMessage, null));
+        newMessages.onNext(operatedMessage.object());
     }
 
     public static Builder builder() {
