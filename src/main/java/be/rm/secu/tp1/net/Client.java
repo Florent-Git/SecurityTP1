@@ -6,27 +6,24 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 
 import javax.net.SocketFactory;
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
-public class Client implements Callable<Integer> {
-    private final Socket _socket;
+public class Client {
+    protected final Socket _socket;
     private final PrintStream _printer;
-    private Future<Integer> _clientCon;
     private final Middleware<Payload<byte[]>> _inputMiddlewares;
     private final Middleware<Payload<byte[]>> _outputMiddlewares;
-    private final ExecutorService _executorService;
     private final Subject<byte[]> newMessages = PublishSubject.create();
 
-    private Client(
+    protected Client(
         String host,
         int port,
         SocketFactory socketFactory,
-        ExecutorService executorService,
         OutputStream stdout,
         Middleware<Payload<byte[]>> inputMiddlewares,
         Middleware<Payload<byte[]>> outputMiddlewares
@@ -35,15 +32,7 @@ public class Client implements Callable<Integer> {
         _outputMiddlewares = outputMiddlewares;
         this._socket = socketFactory.createSocket(host, port);
 
-        this._executorService = executorService;
-
         this._printer = new PrintStream(stdout);
-    }
-
-    @Override
-    public Integer call() {
-        _clientCon = _executorService.submit(this::listen);
-        return 0;
     }
 
     public void sendMessage(String message) throws IOException {
@@ -52,28 +41,21 @@ public class Client implements Callable<Integer> {
 
     public void sendMessage(byte[] message) throws IOException {
         var processedInput = _outputMiddlewares.operate(
-            Payload.of(message)
+            createPayload(message)
         );
 
         _socket.getOutputStream().write(processedInput.getObject());
+    }
+
+    protected Payload<byte[]> createPayload(byte[] bytes){
+        return Payload.of(bytes);
     }
 
     public byte[] readMessage() {
         return newMessages.blockingFirst();
     }
 
-    private Integer listen() throws IOException {
-        var input = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
-
-        while (!_clientCon.isDone() && !_clientCon.isCancelled()) {
-            var newMessage = input.readLine();
-            onNewMessage(newMessage);
-        }
-
-        return 0;
-    }
-
-    private void onNewMessage(String newMessage) {
+    protected void onNewMessage(String newMessage) {
         var encodedMessage = newMessage.getBytes(StandardCharsets.UTF_8);
         var operatedMessage = _inputMiddlewares.operate(Payload.of(encodedMessage));
         newMessages.onNext(operatedMessage.getObject());
@@ -84,13 +66,13 @@ public class Client implements Callable<Integer> {
     }
 
     public static class Builder {
-        private String host;
-        private int port;
-        private SocketFactory socketFactory;
-        private ExecutorService executorService;
-        private OutputStream stdout;
-        private Middleware<Payload<byte[]>> inputMiddlewares;
-        private Middleware<Payload<byte[]>> outputMiddlewares;
+        protected String host;
+        protected int port;
+        protected SocketFactory socketFactory;
+        protected ExecutorService executorService;
+        protected OutputStream stdout;
+        protected Middleware<Payload<byte[]>> inputMiddlewares;
+        protected Middleware<Payload<byte[]>> outputMiddlewares;
 
         public Builder withHost(String host) {
             this.host = host;
@@ -104,11 +86,6 @@ public class Client implements Callable<Integer> {
 
         public Builder withSocketFactory(SocketFactory socketFactory) {
             this.socketFactory = socketFactory;
-            return this;
-        }
-
-        public Builder withExecutorService(ExecutorService executorService) {
-            this.executorService = executorService;
             return this;
         }
 
@@ -132,7 +109,7 @@ public class Client implements Callable<Integer> {
             if (outputMiddlewares == null) outputMiddlewares = Middleware.basic();
 
             return new Client(
-                host, port, socketFactory, executorService, stdout, inputMiddlewares, outputMiddlewares
+                host, port, socketFactory, stdout, inputMiddlewares, outputMiddlewares
             );
         }
     }

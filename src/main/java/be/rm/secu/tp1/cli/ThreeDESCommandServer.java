@@ -34,7 +34,6 @@ public class ThreeDESCommandServer implements Callable<Integer> {
             .withPort(_port)
             .withExecutorService(executor)
             .withServerSocketFactory(ServerSocketFactory.getDefault())
-            .withStdout(System.out)
             .withInputMiddleware(Middleware.link(
                 new B64DecoderMiddleware(),
                 new ThreeDesDecoderMiddleware(_key),

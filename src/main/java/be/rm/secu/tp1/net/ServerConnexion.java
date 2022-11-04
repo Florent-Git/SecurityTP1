@@ -34,10 +34,14 @@ public class ServerConnexion implements Callable<Integer>, Closeable {
         while (!_shouldClose) {
             var string = input.readLine();
             var bytes = string.getBytes(StandardCharsets.UTF_8);
-            _inputMiddleware.operate(Payload.of(bytes));
+            _inputMiddleware.operate(createPayload(bytes));
         }
 
         return 0;
+    }
+
+    protected Payload<byte[]> createPayload(byte[] object) {
+        return Payload.of(object);
     }
 
     @Override
