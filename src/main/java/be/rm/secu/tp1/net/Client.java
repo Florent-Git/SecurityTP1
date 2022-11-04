@@ -14,15 +14,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 public class Client implements Callable<Integer> {
-    private final Socket _socket;
+    protected final Socket _socket;
     private final PrintStream _printer;
-    private Future<Integer> _clientCon;
+    protected Future<Integer> _clientCon;
     private final Middleware<Payload<byte[]>> _inputMiddlewares;
     private final Middleware<Payload<byte[]>> _outputMiddlewares;
     private final ExecutorService _executorService;
     private final Subject<byte[]> newMessages = PublishSubject.create();
 
-    private Client(
+    protected Client(
         String host,
         int port,
         SocketFactory socketFactory,
@@ -52,17 +52,21 @@ public class Client implements Callable<Integer> {
 
     public void sendMessage(byte[] message) throws IOException {
         var processedInput = _outputMiddlewares.operate(
-            Payload.of(message)
+            createPayload(message)
         );
 
         _socket.getOutputStream().write(processedInput.getObject());
+    }
+
+    protected Payload<byte[]> createPayload(byte[] bytes){
+        return Payload.of(bytes);
     }
 
     public byte[] readMessage() {
         return newMessages.blockingFirst();
     }
 
-    private Integer listen() throws IOException {
+    protected Integer listen() throws IOException {
         var input = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
 
         while (!_clientCon.isDone() && !_clientCon.isCancelled()) {
@@ -73,7 +77,7 @@ public class Client implements Callable<Integer> {
         return 0;
     }
 
-    private void onNewMessage(String newMessage) {
+    protected void onNewMessage(String newMessage) {
         var encodedMessage = newMessage.getBytes(StandardCharsets.UTF_8);
         var operatedMessage = _inputMiddlewares.operate(Payload.of(encodedMessage));
         newMessages.onNext(operatedMessage.getObject());
@@ -84,13 +88,13 @@ public class Client implements Callable<Integer> {
     }
 
     public static class Builder {
-        private String host;
-        private int port;
-        private SocketFactory socketFactory;
-        private ExecutorService executorService;
-        private OutputStream stdout;
-        private Middleware<Payload<byte[]>> inputMiddlewares;
-        private Middleware<Payload<byte[]>> outputMiddlewares;
+        protected String host;
+        protected int port;
+        protected SocketFactory socketFactory;
+        protected ExecutorService executorService;
+        protected OutputStream stdout;
+        protected Middleware<Payload<byte[]>> inputMiddlewares;
+        protected Middleware<Payload<byte[]>> outputMiddlewares;
 
         public Builder withHost(String host) {
             this.host = host;
