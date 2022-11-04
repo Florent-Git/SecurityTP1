@@ -21,15 +21,15 @@ import java.util.concurrent.Future;
  */
 @Singleton
 public class Server implements Callable<Integer> {
-    private final ExecutorService _executorService;
-    private final ServerSocket _socket;
-    private Future<Integer> _serverService;
-    private final Map<ServerConnexion, Future<Integer>> _serverConnexions = new HashMap<>();
-    private final Middleware<Payload<byte[]>> _inputMiddleware;
-    private final Middleware<Payload<byte[]>> _outputMiddleware;
+    protected final ExecutorService _executorService;
+    protected final ServerSocket _serverSocket;
+    protected Future<Integer> _serverService;
+    protected final Map<ServerConnexion, Future<Integer>> _serverConnexions = new HashMap<>();
+    protected final Middleware<Payload<byte[]>> _inputMiddleware;
+    protected final Middleware<Payload<byte[]>> _outputMiddleware;
     private final PrintStream _printer;
 
-    private Server(
+    protected Server(
         int port,
         ServerSocketFactory socketFactory,
         ExecutorService executorService,
@@ -37,7 +37,7 @@ public class Server implements Callable<Integer> {
         Middleware<Payload<byte[]>> inputMiddleware,
         Middleware<Payload<byte[]>> outputMiddleware
     ) throws IOException {
-        _socket = socketFactory.createServerSocket(port);
+        _serverSocket = socketFactory.createServerSocket(port);
         _executorService = executorService;
 
         _printer = new PrintStream(printer);
@@ -53,9 +53,9 @@ public class Server implements Callable<Integer> {
      * Écoute la connexion des clients au serveur
      * @return 0 si aucune erreur, -1 si il y a une erreur
      */
-    private Integer listen() throws IOException {
+    protected Integer listen() throws IOException {
         while (!_serverService.isCancelled() && !_serverService.isDone()) {
-            var serverConnexionSocket = _socket.accept();
+            var serverConnexionSocket = _serverSocket.accept();
             var serverConnexion = new ServerConnexion(serverConnexionSocket, _outputMiddleware, _inputMiddleware);
             var serverConnexionService = _executorService.submit(serverConnexion);
             _serverConnexions.put(serverConnexion, serverConnexionService);
@@ -85,12 +85,12 @@ public class Server implements Callable<Integer> {
     }
 
     public static class Builder {
-        private int port;
-        private ServerSocketFactory serverSocketFactory;
-        private OutputStream printer;
-        private ExecutorService executorService;
-        private Middleware<Payload<byte[]>> outputMiddleware;
-        private Middleware<Payload<byte[]>> inputMiddleware;
+        protected int port;
+        protected ServerSocketFactory serverSocketFactory;
+        protected OutputStream printer;
+        protected ExecutorService executorService;
+        protected Middleware<Payload<byte[]>> outputMiddleware;
+        protected Middleware<Payload<byte[]>> inputMiddleware;
 
         public Builder withPort(int port) {
             this.port = port;
@@ -122,7 +122,7 @@ public class Server implements Callable<Integer> {
             return this;
         }
 
-        public Server build() throws IOException {
+        public Server build() throws Exception {
             if (inputMiddleware == null) inputMiddleware = Middleware.basic();
             if (outputMiddleware == null) outputMiddleware = Middleware.basic();
 
