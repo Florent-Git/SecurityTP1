@@ -18,6 +18,10 @@ public class Payload<T> {
         return object;
     }
 
+    public Object getOption(String key) {
+        return options.get(key);
+    }
+
     public Payload<T> withOption(String key, Object value) {
         options.put(key, value);
         return this;
