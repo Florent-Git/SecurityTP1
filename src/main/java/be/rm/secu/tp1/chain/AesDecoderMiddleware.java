@@ -14,7 +14,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 public class AesDecoderMiddleware extends Middleware<Payload<byte[]>> {
-    private final String IV = "FlorentTimothy";
+    private final String IV = "FlorentTimothy22";
 
     @Override
     public Payload<byte[]> operate(Payload<byte[]> payload) {

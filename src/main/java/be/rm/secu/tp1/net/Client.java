@@ -6,27 +6,24 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 
 import javax.net.SocketFactory;
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
-public class Client implements Callable<Integer> {
+public class Client {
     protected final Socket _socket;
     private final PrintStream _printer;
-    protected Future<Integer> _clientCon;
     private final Middleware<Payload<byte[]>> _inputMiddlewares;
     private final Middleware<Payload<byte[]>> _outputMiddlewares;
-    private final ExecutorService _executorService;
     private final Subject<byte[]> newMessages = PublishSubject.create();
 
     protected Client(
         String host,
         int port,
         SocketFactory socketFactory,
-        ExecutorService executorService,
         OutputStream stdout,
         Middleware<Payload<byte[]>> inputMiddlewares,
         Middleware<Payload<byte[]>> outputMiddlewares
@@ -35,15 +32,7 @@ public class Client implements Callable<Integer> {
         _outputMiddlewares = outputMiddlewares;
         this._socket = socketFactory.createSocket(host, port);
 
-        this._executorService = executorService;
-
         this._printer = new PrintStream(stdout);
-    }
-
-    @Override
-    public Integer call() {
-        _clientCon = _executorService.submit(this::listen);
-        return 0;
     }
 
     public void sendMessage(String message) throws IOException {
@@ -64,17 +53,6 @@ public class Client implements Callable<Integer> {
 
     public byte[] readMessage() {
         return newMessages.blockingFirst();
-    }
-
-    protected Integer listen() throws IOException {
-        var input = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
-
-        while (!_clientCon.isDone() && !_clientCon.isCancelled()) {
-            var newMessage = input.readLine();
-            onNewMessage(newMessage);
-        }
-
-        return 0;
     }
 
     protected void onNewMessage(String newMessage) {
@@ -111,11 +89,6 @@ public class Client implements Callable<Integer> {
             return this;
         }
 
-        public Builder withExecutorService(ExecutorService executorService) {
-            this.executorService = executorService;
-            return this;
-        }
-
         public Builder withStdout(OutputStream stdout) {
             this.stdout = stdout;
             return this;
@@ -136,7 +109,7 @@ public class Client implements Callable<Integer> {
             if (outputMiddlewares == null) outputMiddlewares = Middleware.basic();
 
             return new Client(
-                host, port, socketFactory, executorService, stdout, inputMiddlewares, outputMiddlewares
+                host, port, socketFactory, stdout, inputMiddlewares, outputMiddlewares
             );
         }
     }

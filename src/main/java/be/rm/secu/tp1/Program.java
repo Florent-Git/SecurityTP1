@@ -1,5 +1,7 @@
 package be.rm.secu.tp1;
 
+import be.rm.secu.tp1.cli.AESCommandClient;
+import be.rm.secu.tp1.cli.AesDHCommandServer;
 import be.rm.secu.tp1.cli.ThreeDESCommandClient;
 import be.rm.secu.tp1.cli.ThreeDESCommandServer;
 import picocli.CommandLine;
@@ -9,7 +11,9 @@ import picocli.CommandLine;
     description = "Projet de TP1 en Principe de Sécurité des Réseaux pour le Master en Architecture des Systèmes Informatiques à la HEPL",
     subcommands = {
         ThreeDESCommandClient.class,
-        ThreeDESCommandServer.class
+        ThreeDESCommandServer.class,
+        AesDHCommandServer.class,
+        AESCommandClient.class
     }
 )
 public class Program {

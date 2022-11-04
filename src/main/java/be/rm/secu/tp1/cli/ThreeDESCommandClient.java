@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 
 // Message de Base -> Encrypter en 3DES         -> Encoder en B64           -> Ajouter \n à la fin
 //                    ThreeDesEncoderMiddleware    B64EncoderMiddleware     -> CRLFAppenderMiddleware
@@ -45,8 +44,6 @@ public class ThreeDESCommandClient implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        var executor = Executors.newFixedThreadPool(2);
-
         InputStream stdin;
         if (_message != null) stdin = new ByteArrayInputStream(_message.getBytes(StandardCharsets.UTF_8));
         else stdin = System.in;
@@ -55,7 +52,6 @@ public class ThreeDESCommandClient implements Callable<Integer> {
             .withHost(_host)
             .withPort(_port)
             .withStdout(System.out)
-            .withExecutorService(executor)
             .withSocketFactory(SocketFactory.getDefault())
             .withOutputMiddlewares(Middleware.link(
                 new ThreeDesEncoderMiddleware(_key),
@@ -64,12 +60,10 @@ public class ThreeDESCommandClient implements Callable<Integer> {
             ))
             .build();
 
-        client.call();
-
         var scanner = new Scanner(stdin);
 
         client.sendMessage(scanner.nextLine());
 
-        return client.call();
+        return 0;
     }
 }

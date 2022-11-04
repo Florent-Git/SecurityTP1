@@ -1,8 +1,6 @@
 package be.rm.secu.tp1.chain;
 
 import be.rm.secu.tp1.util.Payload;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.Observer;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -16,7 +14,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 public class AESEncoderMiddleware extends Middleware<Payload<byte[]>>{
-    private String initVector = "FlorentTimothy";
+    private String initVector = "FlorentTimothy22";
 
     @Override
     public Payload<byte[]> operate(Payload<byte[]> payload) {

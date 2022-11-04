@@ -1,22 +1,17 @@
 package be.rm.secu.tp1.cli;
 
-import be.rm.secu.tp1.chain.*;
-import be.rm.secu.tp1.net.Client;
+import be.rm.secu.tp1.chain.AESEncoderMiddleware;
+import be.rm.secu.tp1.chain.B64EncoderMiddleware;
+import be.rm.secu.tp1.chain.CRLFAppenderMiddleware;
+import be.rm.secu.tp1.chain.Middleware;
 import be.rm.secu.tp1.net.DHClient;
 import picocli.CommandLine;
 
-import javax.crypto.KeyAgreement;
 import javax.net.SocketFactory;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 
 @CommandLine.Command(
     name = "aes-client",
@@ -41,8 +36,6 @@ public class AESCommandClient implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        var executor = Executors.newFixedThreadPool(2);
-
         InputStream stdin;
         if (_message != null) stdin = new ByteArrayInputStream(_message.getBytes(StandardCharsets.UTF_8));
         else stdin = System.in;
@@ -51,7 +44,6 @@ public class AESCommandClient implements Callable<Integer> {
             .withHost(_host)
             .withPort(_port)
             .withStdout(System.out)
-            .withExecutorService(executor)
             .withSocketFactory(SocketFactory.getDefault())
             .withOutputMiddlewares(Middleware.link(
                 new AESEncoderMiddleware(),
@@ -60,11 +52,9 @@ public class AESCommandClient implements Callable<Integer> {
             ))
             .build();
 
-        client.call();
-
         //Envoi du message
         client.sendMessage(_message);
 
-        return client.call();
+        return 0;
     }
 }

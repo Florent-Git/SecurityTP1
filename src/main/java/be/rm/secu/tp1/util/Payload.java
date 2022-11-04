@@ -1,10 +1,11 @@
 package be.rm.secu.tp1.util;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Payload<T> {
-    private Map<String, Object> options;
+    private Map<String, Object> options = new HashMap<>();
     private T object;
 
     private Payload(T object) {

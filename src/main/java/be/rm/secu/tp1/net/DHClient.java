@@ -2,35 +2,20 @@ package be.rm.secu.tp1.net;
 
 import be.rm.secu.tp1.chain.Middleware;
 import be.rm.secu.tp1.util.Payload;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.subjects.PublishSubject;
-import io.reactivex.rxjava3.subjects.Subject;
-import org.checkerframework.checker.units.qual.C;
 
 import javax.crypto.KeyAgreement;
 import javax.net.SocketFactory;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.concurrent.ExecutorService;
+import java.util.Base64;
 
 public class DHClient extends Client {
     private byte[] secretKey;
-    protected DHClient(String host, int port, SocketFactory socketFactory, ExecutorService executorService, OutputStream stdout, Middleware<Payload<byte[]>> inputMiddlewares, Middleware<Payload<byte[]>> outputMiddlewares) throws IOException {
-        super(host, port, socketFactory, executorService, stdout, inputMiddlewares, outputMiddlewares);
-    }
+    protected DHClient(String host, int port, SocketFactory socketFactory, OutputStream stdout, Middleware<Payload<byte[]>> inputMiddlewares, Middleware<Payload<byte[]>> outputMiddlewares) throws IOException {
+        super(host, port, socketFactory, stdout, inputMiddlewares, outputMiddlewares);
 
-    public static class Builder extends Client.Builder{
-        @Override
-        public Client build() throws IOException {
-            return new DHClient(host, port, socketFactory, executorService, stdout, inputMiddlewares, outputMiddlewares);
-        }
-    }
-
-    @Override
-    protected Integer listen() throws IOException {
         var input = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
         var out = new BufferedWriter(new OutputStreamWriter(_socket.getOutputStream()));
 
@@ -46,13 +31,14 @@ public class DHClient extends Client {
 
             //Encryption et envoi de la clé publique du client au serveur
             byte[] clientPubKeyEnc = clientKpair.getPublic().getEncoded();
-            out.write(new String(clientPubKeyEnc, StandardCharsets.UTF_8));
+            out.write(Base64.getEncoder().encodeToString(clientPubKeyEnc));
             out.newLine();
             out.flush();
 
             //Traitement de la réponse du serveur
             KeyFactory clientKeyFac = KeyFactory.getInstance("DH");
-            byte[] in = input.readLine().getBytes();
+            var b64In = input.readLine();
+            byte[] in = Base64.getDecoder().decode(b64In);
             X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(in);
             PublicKey serverPubKey = clientKeyFac.generatePublic(x509KeySpec);
             clientKeyAgree.doPhase(serverPubKey, true);
@@ -62,13 +48,13 @@ public class DHClient extends Client {
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
             throw new RuntimeException(e);
         }
+    }
 
-        while (!_clientCon.isDone() && !_clientCon.isCancelled()) {
-            var newMessage = input.readLine();
-            onNewMessage(newMessage);
+    public static class Builder extends Client.Builder{
+        @Override
+        public Client build() throws IOException {
+            return new DHClient(host, port, socketFactory, stdout, inputMiddlewares, outputMiddlewares);
         }
-
-        return 0;
     }
 
     @Override

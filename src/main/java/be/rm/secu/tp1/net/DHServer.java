@@ -6,10 +6,10 @@ import be.rm.secu.tp1.util.Payload;
 import javax.crypto.KeyAgreement;
 import javax.net.ServerSocketFactory;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.concurrent.ExecutorService;
 
 public class DHServer extends Server {
@@ -20,11 +20,10 @@ public class DHServer extends Server {
         int port,
         ServerSocketFactory socketFactory,
         ExecutorService executorService,
-        OutputStream printer,
         Middleware<Payload<byte[]>> inputMiddleware,
         Middleware<Payload<byte[]>> outputMiddleware
     ) throws IOException, NoSuchAlgorithmException {
-        super(port, socketFactory, executorService, printer, inputMiddleware, outputMiddleware);
+        super(port, socketFactory, executorService, inputMiddleware, outputMiddleware);
 
         var keyPairGenerator = KeyPairGenerator.getInstance("DH");
         keyPairGenerator.initialize(2048);
@@ -42,11 +41,12 @@ public class DHServer extends Server {
             var in = new BufferedReader(new InputStreamReader(serverConnexionSocket.getInputStream()));
 
             try {
-                byte[] pubKeyEnc = in.readLine().getBytes();
+                var b64PubKeyEnc = in.readLine();
+                var pubKeyEnc = Base64.getDecoder().decode(b64PubKeyEnc);
                 var x509KeySpec = new X509EncodedKeySpec(pubKeyEnc);
                 var clientPubKey = keyFactory.generatePublic(x509KeySpec);
 
-                out.write(new String(dhKeyPair.getPublic().getEncoded(), StandardCharsets.UTF_8));
+                out.write(Base64.getEncoder().encodeToString(dhKeyPair.getPublic().getEncoded()));
                 out.newLine();
                 out.flush();
 
@@ -78,7 +78,7 @@ public class DHServer extends Server {
         @Override
         public Server build() throws Exception {
             return new DHServer(
-                port, serverSocketFactory, executorService, printer, inputMiddleware, outputMiddleware
+                port, serverSocketFactory, executorService, inputMiddleware, outputMiddleware
             );
         }
     }

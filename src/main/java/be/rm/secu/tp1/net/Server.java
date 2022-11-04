@@ -6,8 +6,6 @@ import com.google.inject.Singleton;
 
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,20 +25,17 @@ public class Server implements Callable<Integer> {
     protected final Map<ServerConnexion, Future<Integer>> _serverConnexions = new HashMap<>();
     protected final Middleware<Payload<byte[]>> _inputMiddleware;
     protected final Middleware<Payload<byte[]>> _outputMiddleware;
-    private final PrintStream _printer;
 
     protected Server(
         int port,
         ServerSocketFactory socketFactory,
         ExecutorService executorService,
-        OutputStream printer,
         Middleware<Payload<byte[]>> inputMiddleware,
         Middleware<Payload<byte[]>> outputMiddleware
     ) throws IOException {
         _serverSocket = socketFactory.createServerSocket(port);
         _executorService = executorService;
 
-        _printer = new PrintStream(printer);
         _inputMiddleware = inputMiddleware;
         _outputMiddleware = outputMiddleware;
     }
@@ -87,7 +82,6 @@ public class Server implements Callable<Integer> {
     public static class Builder {
         protected int port;
         protected ServerSocketFactory serverSocketFactory;
-        protected OutputStream printer;
         protected ExecutorService executorService;
         protected Middleware<Payload<byte[]>> outputMiddleware;
         protected Middleware<Payload<byte[]>> inputMiddleware;
@@ -99,11 +93,6 @@ public class Server implements Callable<Integer> {
 
         public Builder withServerSocketFactory(ServerSocketFactory factory) {
             this.serverSocketFactory = factory;
-            return this;
-        }
-
-        public Builder withStdout(OutputStream printer) {
-            this.printer = printer;
             return this;
         }
 
@@ -130,7 +119,6 @@ public class Server implements Callable<Integer> {
                 port,
                 serverSocketFactory,
                 executorService,
-                printer,
                 inputMiddleware,
                 outputMiddleware
             );
