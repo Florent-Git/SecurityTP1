@@ -11,7 +11,8 @@ import picocli.CommandLine;
         ThreeDESCommandServer.class,
         AesDHCommandServer.class,
         AESCommandClient.class,
-        SHACommandClient.class
+        SHACommandClient.class,
+        SHACommandServer.class
     }
 )
 public class Program {

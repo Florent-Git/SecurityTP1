@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(
-    name = "sha-client",
+    name = "sha1-client",
     description = "Envoie un message et le hash de ce dernier"
 )
 public class SHACommandClient extends ClientCommand implements Callable<Integer> {
