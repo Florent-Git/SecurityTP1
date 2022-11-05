@@ -1,9 +1,6 @@
 package be.rm.secu.tp1;
 
-import be.rm.secu.tp1.cli.AESCommandClient;
-import be.rm.secu.tp1.cli.AesDHCommandServer;
-import be.rm.secu.tp1.cli.ThreeDESCommandClient;
-import be.rm.secu.tp1.cli.ThreeDESCommandServer;
+import be.rm.secu.tp1.cli.*;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -13,7 +10,9 @@ import picocli.CommandLine;
         ThreeDESCommandClient.class,
         ThreeDESCommandServer.class,
         AesDHCommandServer.class,
-        AESCommandClient.class
+        AESCommandClient.class,
+        SHACommandClient.class,
+        SHACommandServer.class
     }
 )
 public class Program {
