@@ -12,7 +12,8 @@ import picocli.CommandLine;
         AesDHCommandServer.class,
         AESCommandClient.class,
         SHACommandClient.class,
-        SHACommandServer.class
+        SHACommandServer.class,
+        HMACCommandServer.class
     }
 )
 public class Program {
