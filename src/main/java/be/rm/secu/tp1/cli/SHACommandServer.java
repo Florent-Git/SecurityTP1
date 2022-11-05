@@ -8,6 +8,10 @@ import javax.net.ServerSocketFactory;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
+@CommandLine.Command(
+    name = "sha1-server",
+    description = "Lancement d'un server qui écoute pour recevoir un message hashé avec SHA-1"
+)
 public class SHACommandServer implements Callable<Integer> {
     @CommandLine.Option(
         names = { "-p", "--port" },
