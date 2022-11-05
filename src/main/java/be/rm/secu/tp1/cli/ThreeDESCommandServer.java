@@ -15,16 +15,11 @@ import java.util.concurrent.Executors;
     name = "3des-server",
     description = "Lancement d'un server qui écoute pour recevoir un message encrypté par 3DES"
 )
-public class ThreeDESCommandServer implements Callable<Integer> {
+public class ThreeDESCommandServer extends ServerCommand implements Callable<Integer> {
     @CommandLine.Option(
         names = { "-k", "--key" },
         description = "Clef d'encryption 3DES (112 ou 168 bits) (défaut: ILOVESECURITY)"
     ) private String _key = "ILOVESECURITY";
-
-    @CommandLine.Option(
-        names = { "-p", "--port" },
-        description = "Port d'écoute (défaut: 56978)"
-    ) private int _port = 56978;
 
     @Override
     public Integer call() throws Exception {

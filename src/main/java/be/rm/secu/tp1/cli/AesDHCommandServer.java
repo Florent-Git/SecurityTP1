@@ -15,12 +15,7 @@ import java.util.concurrent.Executors;
     name = "aes-server",
     description = "Lance un server qui écoute les messages encryptés par AES et la clef est générée par DH"
 )
-public class AesDHCommandServer implements Callable<Integer> {
-    @CommandLine.Option(
-        names = { "-p", "--port" },
-        description = "Définis le port du client"
-    ) private int _port;
-
+public class AesDHCommandServer extends ServerCommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         var server = new DHServer.Builder()
