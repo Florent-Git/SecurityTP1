@@ -71,7 +71,7 @@ public class Server implements Callable<Integer> {
             return 0;
         } catch (Exception e) {
             System.err.println(e.getMessage());
-            return -1;
+            return 0;
         }
     }
 

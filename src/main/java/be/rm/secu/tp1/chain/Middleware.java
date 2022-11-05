@@ -32,7 +32,7 @@ public abstract class Middleware<T> {
     }
 
     protected final T error(Throwable throwable) {
-        // TODO: Si erreur
+        System.err.println(throwable.getMessage());
         return null;
     }
 }
