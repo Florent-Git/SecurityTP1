@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 @CommandLine.Command(
-    name = "hmac-server",
+    name = "hmacmd5-server",
     description = "Lance un serveur qui va écouter un message authentifié par HMAC-MD5"
 )
 public class HMACCommandServer extends ServerCommand implements Callable<Integer> {

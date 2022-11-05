@@ -20,7 +20,7 @@ public class HMACDecoder extends Middleware<Payload<byte[]>> {
 
         byte[] secretKey = (byte[]) payload.getOption("key");
 
-        var keySpec = new SecretKeySpec(secretKey, "HmacMD5");
+        var keySpec = new SecretKeySpec(secretKey, 0, 16, "HmacMD5");
         try {
             var mac = Mac.getInstance("HmacMD5");
             mac.init(keySpec);

@@ -8,14 +8,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 
 public class HMACMD5EncoderMiddleware extends Middleware<Payload<byte[]>> {
     @Override
     public Payload<byte[]> operate(Payload<byte[]> object) {
         try {
-            SecretKeySpec secretKeySpec = new SecretKeySpec((byte[]) object.getOption("key"),0, 16,"HmacMD5");
-            Mac hmac = Mac.getInstance("HMAC-MD5");
+            SecretKeySpec secretKeySpec = new SecretKeySpec((byte[]) object.getOption("key"), 0, 16, "HmacMD5");
+            Mac hmac = Mac.getInstance("HmacMD5");
             hmac.init(secretKeySpec);
             hmac.update(object.getObject());
             byte[] hash = hmac.doFinal();
