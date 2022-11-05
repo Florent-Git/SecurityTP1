@@ -2,7 +2,7 @@ package be.rm.secu.tp1.cli;
 
 import picocli.CommandLine;
 
-public class ServerCommand {
+public abstract class ServerCommand {
     @CommandLine.Option(
         names = {"-p", "--port"},
         description = "Définis le port d'écoute du serveur",
