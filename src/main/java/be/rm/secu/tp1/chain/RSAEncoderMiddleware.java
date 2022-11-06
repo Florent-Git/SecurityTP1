@@ -10,22 +10,21 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.*;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 
 public class RSAEncoderMiddleware extends Middleware<Payload<byte[]>> {
-    private PrivateKey privatekey;
+    private PublicKey publicKey;
 
     public RSAEncoderMiddleware(File keystoreFile, String password, String alias){
         try {
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
             char[] pwd = password.toCharArray();
             keyStore.load(new FileInputStream(keystoreFile), pwd);
-            KeyStore.PasswordProtection keyPassword = new KeyStore.PasswordProtection(pwd);
-            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, keyPassword);
+            Certificate certificate = keyStore.getCertificate(alias);
+            publicKey = certificate.getPublicKey();
 
-            privatekey = privateKeyEntry.getPrivateKey();
-
-        } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException | UnrecoverableEntryException e) {
+        } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
 
@@ -35,7 +34,7 @@ public class RSAEncoderMiddleware extends Middleware<Payload<byte[]>> {
         byte[] payload;
         try {
             Cipher encryptCipher = Cipher.getInstance("RSA");
-            encryptCipher.init(Cipher.ENCRYPT_MODE, privatekey);
+            encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
             payload = encryptCipher.doFinal();
         } catch (NoSuchPaddingException | InvalidKeyException | BadPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException e) {
             throw new RuntimeException(e);
