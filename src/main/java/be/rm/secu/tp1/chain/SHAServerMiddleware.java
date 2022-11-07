@@ -2,7 +2,6 @@ package be.rm.secu.tp1.chain;
 
 import be.rm.secu.tp1.util.Payload;
 
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -25,12 +24,12 @@ public class SHAServerMiddleware extends Middleware<Payload<byte[]>> {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        String payload;
+
         if (Arrays.equals(messageDigestLocal, messageDigestPayload)) {
-            payload = "Hash reçu OK, message : " + new String(message, StandardCharsets.UTF_8);
+            System.out.println("Hash reçu: OK");
         } else {
-            payload = "Hash reçu NOK, message : " + new String(message, StandardCharsets.UTF_8);
+            System.out.println("Hash reçu: NOK");
         }
-        return next(Payload.of(payload.getBytes(StandardCharsets.UTF_8)));
+        return next(object.copy(message));
     }
 }

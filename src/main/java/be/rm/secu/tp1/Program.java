@@ -18,7 +18,9 @@ import picocli.CommandLine;
         RSASHA1CommandClient.class,
         RSASHA1CommandServer.class,
         RSACommandClient.class,
-        RSACommandServer.class
+        RSACommandServer.class,
+        CoucouCommandClient.class,
+        CoucouServerCommand.class
     }
 )
 public class Program {

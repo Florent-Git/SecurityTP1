@@ -4,9 +4,7 @@ import be.rm.secu.tp1.util.Payload;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -36,7 +34,7 @@ public class SignatureRSASH1DecoderMiddleware extends Middleware<Payload<byte[]>
         var signaturePayload = Arrays.copyOfRange(object.getObject(), longueurPayload - tailleSign, longueurPayload);
         var message = Arrays.copyOfRange(object.getObject(), 4, longueurPayload - tailleSign);
 
-        Boolean verif;
+        boolean verif;
         try {
             Signature signatureLocale = Signature.getInstance("SHA1withRSA");
             signatureLocale.initVerify(clientPublicKey);
@@ -45,13 +43,13 @@ public class SignatureRSASH1DecoderMiddleware extends Middleware<Payload<byte[]>
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
             throw new RuntimeException(e);
         }
-        String payload;
+
         if (verif){
-            payload = "Signature reçue OK, message : " + new String(message, StandardCharsets.UTF_8);
+            System.out.println("Signature reçue: OK");
         }else{
-            payload = "Signature reçue NOK, message : " + new String(message, StandardCharsets.UTF_8);
+            System.out.println("Signature reçue: NOK");
         }
 
-        return next(Payload.of(payload.getBytes(StandardCharsets.UTF_8)));
+        return next(object.copy(message));
     }
 }
