@@ -19,8 +19,8 @@ import java.util.concurrent.Executors;
 )
 public class RSACommandServer extends ServerCommand implements Callable<Integer> {
     @Option(
-        names = { "--key-store" },
-        description = "Specifie le certificat à utiliser"
+        names = { "--keystore" },
+        description = "Specifie le keystore dans lequel la clef privé du certificat se situe"
     ) private File _keyStoreFile;
 
     @Option(

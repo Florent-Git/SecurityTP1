@@ -17,7 +17,8 @@ import picocli.CommandLine;
         HMACMD5CommandClient.class,
         RSASHA1CommandClient.class,
         RSASHA1CommandServer.class,
-        RSACommandClient.class
+        RSACommandClient.class,
+        RSACommandServer.class
     }
 )
 public class Program {
@@ -26,19 +27,5 @@ public class Program {
             new CommandLine(new Program())
                 .execute(args)
         );
-//        var executorService = Executors.newFixedThreadPool(4);
-//
-//        Client client = Client.builder()
-//            .withHost("localhost")
-//            .withPort(18697)
-//            .withSocketFactory(SocketFactory.getDefault())
-//            .withExecutorService(executorService)
-//            .withStdin(System.in)
-//            .withStdout(System.out)
-//            .withOutputMiddlewares(Middleware.link(new CRLFAppenderMiddleware()))
-//            .withInputMiddlewares(Middleware.link(new StdoutMiddleware()))
-//            .build();
-//
-//        client.call();
     }
 }

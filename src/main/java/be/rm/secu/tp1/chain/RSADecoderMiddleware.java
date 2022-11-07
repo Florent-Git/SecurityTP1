@@ -32,9 +32,10 @@ public class RSADecoderMiddleware extends Middleware<Payload<byte[]>> {
         byte[] decryptedMessage;
 
         try {
-            Cipher cipher = Cipher.getInstance("RSA");
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            decryptedMessage = cipher.doFinal(encryptedMessage);
+            cipher.update(encryptedMessage);
+            decryptedMessage = cipher.doFinal();
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException |
                  BadPaddingException e) {
             error(e);

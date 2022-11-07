@@ -1,6 +1,9 @@
 package be.rm.secu.tp1.cli;
 
-import be.rm.secu.tp1.chain.*;
+import be.rm.secu.tp1.chain.B64EncoderMiddleware;
+import be.rm.secu.tp1.chain.CRLFAppenderMiddleware;
+import be.rm.secu.tp1.chain.Middleware;
+import be.rm.secu.tp1.chain.RSAEncoderMiddleware;
 import be.rm.secu.tp1.net.Client;
 import picocli.CommandLine;
 
@@ -15,17 +18,17 @@ import java.util.concurrent.Callable;
 public class RSACommandClient extends ClientCommand implements Callable<Integer> {
     @CommandLine.Option(
         names = { "-k", "--keystore" },
-        description = "Le keystore comprenant la clé privée RSA"
+        description = "Le truststore contenat le certificat du serveur"
     ) private File keystoreFile;
 
     @CommandLine.Option(
         names = { "-a", "--alias" },
-        description = "L'alias de la paire de clés"
+        description = "L'alias du certificat dans le truststore"
     ) private String alias;
 
     @CommandLine.Option(
         names = { "-P", "--password" },
-        description = "Le mot de passe du keystore"
+        description = "Le mot de passe du truststore"
     ) private String password;
 
     @Override
