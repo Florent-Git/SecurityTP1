@@ -46,3 +46,15 @@ options où ce n'est pas possible de mettre une valeur par défaut qui fonctionn
 ```shell
 > java -jar tp1-all-1.0.0-SNAPSHOT.jar rsa-server -P myPassword --alias cert -p 4556 --keystore ./my-key-store.p12
 ```
+
+## Build du programme
+
+Si le jar n'est pas disponible, il faut build le jar:
+
+```shell
+> gradlew fatJar
+```
+
+Le fichier sera disponible sous `./build/libs/tp1-all-1.0.0-SNAPSHOT.jar`.
+
+Des fichiers certificats et des paires de clefs sont disponibles sous `./src/main/resources/`.
