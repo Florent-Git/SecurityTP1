@@ -35,7 +35,7 @@ public class RSAEncoderMiddleware extends Middleware<Payload<byte[]>> {
         try {
             Cipher encryptCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            payload = encryptCipher.doFinal();
+            payload = encryptCipher.doFinal(object.getObject());
         } catch (NoSuchPaddingException | InvalidKeyException | BadPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException e) {
             throw new RuntimeException(e);
         }
