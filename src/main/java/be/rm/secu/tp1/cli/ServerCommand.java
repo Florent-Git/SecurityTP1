@@ -7,5 +7,5 @@ public abstract class ServerCommand {
         names = {"-p", "--port"},
         description = "Définis le port d'écoute du serveur",
         scope = CommandLine.ScopeType.INHERIT
-    ) protected int _port;
+    ) protected int _port = 4556;
 }

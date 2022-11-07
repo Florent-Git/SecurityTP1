@@ -27,12 +27,12 @@ public class RSACommandServer extends ServerCommand implements Callable<Integer>
         names = { "-P", "--password" },
         description = "Le mot de passe du keystore"
     )
-    private String _password;
+    private String _password = "hepl2022";
 
     @Option(
         names = { "-a", "--alias" },
         description = "Alias du certificat dans le keystore"
-    ) private String _alias;
+    ) private String _alias = "cert";
 
     @Override
     public Integer call() throws Exception {

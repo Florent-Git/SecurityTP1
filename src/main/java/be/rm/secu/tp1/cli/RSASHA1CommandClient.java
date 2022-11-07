@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
 )
 public class RSASHA1CommandClient extends ClientCommand implements Callable<Integer> {
     @CommandLine.Option(
-        names = { "-k", "--privatekey" },
+        names = { "--privatekey" },
         description = "La clef privé RSA dont la clef publique a été précédemment communiquée avec le serveur"
     ) private File privateKeyFile;
 

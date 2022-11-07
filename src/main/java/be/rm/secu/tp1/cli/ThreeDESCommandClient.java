@@ -25,7 +25,7 @@ public class ThreeDESCommandClient extends ClientCommand implements Callable<Int
     @CommandLine.Option(
         names = { "-k", "--key" },
         description = "Clef d'encryption 3DES (112 ou 168 bits) (défaut: ILOVESECURITY)"
-    ) private String _key = "ILOVESECURITY";
+    ) private String _key = "AAAAAAAAAAAAAAAAAAAAAAAA";
 
     @Override
     public Integer call() throws Exception {
