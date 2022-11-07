@@ -1,6 +1,9 @@
 package be.rm.secu.tp1.cli;
 
-import be.rm.secu.tp1.chain.*;
+import be.rm.secu.tp1.chain.B64DecoderMiddleware;
+import be.rm.secu.tp1.chain.Middleware;
+import be.rm.secu.tp1.chain.SignatureRSASH1DecoderMiddleware;
+import be.rm.secu.tp1.chain.StdoutMiddleware;
 import be.rm.secu.tp1.net.Server;
 import picocli.CommandLine;
 
@@ -15,7 +18,7 @@ import java.util.concurrent.Executors;
 )
 public class RSASHA1CommandServer extends ServerCommand implements Callable<Integer> {
     @CommandLine.Option(
-        names = { "-k", "--publickey" },
+        names = { "--publickey" },
         description = "Clé publique du client"
     ) private File _publickey;
 

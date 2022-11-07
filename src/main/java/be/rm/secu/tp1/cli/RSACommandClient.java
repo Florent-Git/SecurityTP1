@@ -24,12 +24,12 @@ public class RSACommandClient extends ClientCommand implements Callable<Integer>
     @CommandLine.Option(
         names = { "-a", "--alias" },
         description = "L'alias du certificat dans le truststore"
-    ) private String alias;
+    ) private String alias = "cert";
 
     @CommandLine.Option(
         names = { "-P", "--password" },
         description = "Le mot de passe du truststore"
-    ) private String password;
+    ) private String password = "hepl2022";
 
     @Override
     public Integer call() throws Exception {
