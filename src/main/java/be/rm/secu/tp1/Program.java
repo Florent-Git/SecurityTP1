@@ -16,7 +16,8 @@ import picocli.CommandLine;
         HMACCommandServer.class,
         HMACMD5CommandClient.class,
         RSASHA1CommandClient.class,
-        RSASHA1CommandServer.class
+        RSASHA1CommandServer.class,
+        RSACommandClient.class
     }
 )
 public class Program {
